@@ -1,10 +1,11 @@
-FROM node:18-alpine AS build
+FROM node:20-alpine AS build
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
 ARG VITE_API_BASE_URL=https://api-aioffice.fjdresources.com
-ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+# Coolify may pass an empty build-arg; fall back to production API URL
+ENV VITE_API_BASE_URL=${VITE_API_BASE_URL:-https://api-aioffice.fjdresources.com}
 RUN npm run build
 
 FROM nginx:alpine
