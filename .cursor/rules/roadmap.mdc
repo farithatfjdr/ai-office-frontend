@@ -1,0 +1,42 @@
+---
+description: Ordered next work for the AI Office frontend (and required backend)
+alwaysApply: true
+---
+
+# Roadmap
+
+Continue from the last unfinished item. Backend work lives in `fjdresources/ai-office-backend`; this repo only consumes APIs.
+
+## Done
+
+- Northgate UI scaffold (Vite + React + Tailwind)
+- TOTP login, JWT session, live agent chat
+- Docker / nginx / Coolify config
+- Repo hygiene: `.gitignore`, `.env.example`, `.cursor/environment.json`, Cursor rules
+
+## Next (in order)
+
+1. **Persist messages + MFA (backend)**
+   - Save chat to the `messages` table (`schema.sql` already exists)
+   - Store TOTP secret in DB (or use `TOTP_SECRET` from env so it survives restarts)
+   - Load history per agent when chat opens
+2. **Wire chat history in this UI**
+   - Fetch saved messages on agent/War Room open
+   - Keep sending via `POST /api/message/:agentId`
+   - Pass prior turns so agents have conversation context (`projectId` is accepted by the API but unused today)
+3. **Projects + tasks APIs, then replace mocks**
+   - Backend CRUD for projects/tasks (`handleCreate`, status/priority fields)
+   - Frontend: drop `INITIAL_PROJECTS` / `INITIAL_TASKS` for real `fetch` helpers in `client.js`
+   - Optional: parse `TASK:` lines from agent replies into task rows
+4. **Files + activity**
+   - `GET /api/files` (upload/download) instead of hardcoded `FILES`
+   - Activity feed endpoint instead of `INITIAL_ACTIVITY`
+5. **Frontend Coolify smoke-test**
+   - Confirm https://ai-office.fjdresources.com serves this build
+   - Login + one agent message against production API
+
+## Known low-priority polish
+
+- Inline theme styles are duplicated; `T` in `constants.js` is the source of truth (see `shared.jsx`)
+- Notifications remain local mock data
+- Tools (Apify, n8n, web search) are listed in the UI but not wired

@@ -1,0 +1,66 @@
+---
+description: Full project state so every AI session knows the codebase
+alwaysApply: true
+---
+
+# AI Office frontend
+
+Northgate Office UI for a one-person virtual company with AI employees. Separate repo from the backend — do not merge the two, and do not nest `frontend/` inside the backend repo.
+
+- **UI:** https://ai-office.fjdresources.com
+- **API:** https://api-aioffice.fjdresources.com
+- **Repo:** https://github.com/fjdresources/ai-office-frontend
+- **Backend:** https://github.com/fjdresources/ai-office-backend
+
+Stack: Vite 8, React 19, Tailwind CSS v4, lucide-react. JavaScript + JSX (no TypeScript). Deployed via Docker (nginx SPA) + Coolify.
+
+## What works today
+
+- TOTP login + JWT auth (frontend ↔ backend, real API)
+- Chat with 6 AI agents via `POST /api/message/:agentId` (real API)
+- @mention hand-off between agents
+- "Turn into task/project" from War Room chat
+- Dark-themed, responsive UI with collapsible panels
+- Dockerized frontend with nginx SPA config
+
+## Auth and API
+
+JWT is stored in `localStorage`. All HTTP goes through `src/api/client.js`.
+
+| Endpoint | Method | Purpose | Helper |
+|----------|--------|---------|--------|
+| `/api/auth/login` | POST | TOTP → `{ token }` | `login()` |
+| `/api/auth/verify` | GET | Verify JWT → `{ user }` | `verifyToken()` |
+| `/api/message/:agentId` | POST | Agent chat | `sendMessage()` |
+
+War Room is a UI-only id (`warroom`). `toApiAgentId()` maps it to `chief-of-staff`. Backend agent ids: `chief-of-staff`, `finance`, `research`, `marketing`, `operations`, `data`.
+
+`VITE_API_BASE_URL` is inlined at Vite build time (see `.env.example` and the Docker `ARG`).
+
+## Mock data (never hits the backend)
+
+| Surface | Source |
+|---------|--------|
+| Projects | `INITIAL_PROJECTS` (5 projects) |
+| Tasks | `INITIAL_TASKS` (8 tasks), React state only |
+| Activity | `INITIAL_ACTIVITY` |
+| Files | hardcoded `FILES` array |
+| Notifications | hardcoded `NOTIFICATIONS` |
+
+## Key files
+
+| File | Role |
+|------|------|
+| `src/main.jsx` | React root, StrictMode + AuthProvider |
+| `src/App.jsx` | Login gate + office shell / views |
+| `src/api/client.js` | Fetch wrapper, JWT, agent id mapping |
+| `src/context/AuthContext.jsx` | Token, verify-on-load, login/logout |
+| `src/data/constants.js` | Theme `T`, agents, mock data |
+| `src/components/*` | Sidebar, top bar, workspace, panels, views |
+| `src/index.css` | Tailwind v4 import + full-height reset |
+| `vite.config.js` | Vite 8 + React + Tailwind v4 plugins |
+| `Dockerfile` / `nginx.conf` / `docker-compose.yaml` | Coolify production build |
+
+## Deploy
+
+Coolify resource → this repo → `docker-compose.yaml` → domain **ai-office.fjdresources.com** port **80**. Cloudflare Tunnel origin `https://localhost:443`, **No TLS Verify** on. Backend `CORS_ORIGIN` must be `https://ai-office.fjdresources.com`.
