@@ -34,18 +34,20 @@ export async function verifyToken() {
 }
 
 export async function sendMessage(agentId, content, projectContext = '', thread = '') {
-  return apiFetch(`/api/message/${agentId}`, {
+  const historyId = thread || agentId
+  return apiFetch(`/api/message/${encodeURIComponent(agentId)}`, {
     method: 'POST',
     body: JSON.stringify({
       content,
       projectContext,
-      thread: thread || agentId,
+      thread: historyId,
     }),
   })
 }
 
 export async function getMessages(agentId) {
-  return apiFetch(`/api/message/${agentId}`)
+  const id = encodeURIComponent(agentId)
+  return apiFetch(`/api/message/${id}?thread=${id}`)
 }
 
 export function toApiAgentId(agentId) {

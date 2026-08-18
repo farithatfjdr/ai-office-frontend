@@ -32,8 +32,9 @@ JWT is stored in `localStorage`. All HTTP goes through `src/api/client.js`.
 | `/api/auth/login` | POST | TOTP → `{ token }` | `login()` |
 | `/api/auth/verify` | GET | Verify JWT → `{ user }` | `verifyToken()` |
 | `/api/message/:agentId` | POST | Agent chat | `sendMessage()` |
+| `/api/message/:agentId` | GET | Chat history | `getMessages()` |
 
-War Room is a UI-only id (`warroom`). `toApiAgentId()` maps it to `chief-of-staff`. Backend agent ids: `chief-of-staff`, `finance`, `research`, `marketing`, `operations`, `data`.
+War Room uses API id `warroom` for GET and POST (history key). Backend maps that thread to the Chief of Staff model. `toApiAgentId()` is only for matching projects to a department.
 
 `VITE_API_BASE_URL` is inlined at Vite build time (see `.env.example` and the Docker `ARG`).
 

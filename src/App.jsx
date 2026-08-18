@@ -79,7 +79,7 @@ function OfficeApp() {
     }))
   }
 
-  const callAgentApi = async (uiAgentId, text) => {
+  const callAgentApi = async (uiAgentId, text, thread = uiAgentId) => {
     const apiAgentId = toApiAgentId(uiAgentId)
     const name = agentLabel(uiAgentId)
 
@@ -89,7 +89,7 @@ function OfficeApp() {
     try {
       const project = projects.find((p) => p.agent === apiAgentId)
       const projectContext = project ? `Project: ${project.name}` : ''
-      const result = await sendMessage(apiAgentId, text, projectContext, uiAgentId)
+      const result = await sendMessage(uiAgentId, text, projectContext, thread)
 
       removePendingTools(uiAgentId)
       appendMessage(uiAgentId, { role: 'assistant', text: result.agentResponse.content })
@@ -120,7 +120,7 @@ function OfficeApp() {
       appendMessage(mentioned.id, { role: 'tool', text: `New request from ${sourceLabel}` })
       appendMessage(mentioned.id, { role: 'user', text: cleanText || text })
 
-      await callAgentApi(mentioned.id, cleanText || text)
+      await callAgentApi(mentioned.id, cleanText || text, agentId)
       return
     }
 
