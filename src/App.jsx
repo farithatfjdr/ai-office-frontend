@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
-import { sendMessage, toApiAgentId } from './api/client'
+import { sendMessage, getMessages, toApiAgentId } from './api/client'
 import { useAuth } from './context/AuthContext'
 import Login from './components/Login'
 import LeftSidebar from './components/LeftSidebar'
@@ -32,6 +32,30 @@ function OfficeApp() {
   const [activityLog, setActivityLog] = useState(INITIAL_ACTIVITY)
   const [messagesByAgent, setMessagesByAgent] = useState(buildInitialMessages)
   const [sendingAgent, setSendingAgent] = useState(null)
+  const chatId = view.type === 'agent' || view.type === 'warroom'
+    ? (view.type === 'warroom' ? 'warroom' : view.id)
+    : null
+
+  useEffect(() => {
+    if (!chatId) return undefined
+
+    let cancelled = false
+    getMessages(chatId)
+      .then((data) => {
+        const loaded = (data.messages || [])
+          .filter((m) => m.role === 'user' || m.role === 'assistant')
+          .map((m) => ({ role: m.role, text: m.content }))
+        if (cancelled || loaded.length === 0) return
+        setMessagesByAgent((prev) => ({ ...prev, [chatId]: loaded }))
+      })
+      .catch(() => {
+        // History endpoint may not be deployed yet; keep local welcome messages.
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [chatId])
 
   const navigate = (v) => {
     setView(v)
@@ -65,7 +89,7 @@ function OfficeApp() {
     try {
       const project = projects.find((p) => p.agent === apiAgentId)
       const projectContext = project ? `Project: ${project.name}` : ''
-      const result = await sendMessage(apiAgentId, text, projectContext)
+      const result = await sendMessage(apiAgentId, text, projectContext, uiAgentId)
 
       removePendingTools(uiAgentId)
       appendMessage(uiAgentId, { role: 'assistant', text: result.agentResponse.content })

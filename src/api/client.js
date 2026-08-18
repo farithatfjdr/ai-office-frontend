@@ -33,11 +33,19 @@ export async function verifyToken() {
   return apiFetch('/api/auth/verify')
 }
 
-export async function sendMessage(agentId, content, projectContext = '') {
+export async function sendMessage(agentId, content, projectContext = '', thread = '') {
   return apiFetch(`/api/message/${agentId}`, {
     method: 'POST',
-    body: JSON.stringify({ content, projectContext }),
+    body: JSON.stringify({
+      content,
+      projectContext,
+      thread: thread || agentId,
+    }),
   })
+}
+
+export async function getMessages(agentId) {
+  return apiFetch(`/api/message/${agentId}`)
 }
 
 export function toApiAgentId(agentId) {
