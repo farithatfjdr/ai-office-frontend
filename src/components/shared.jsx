@@ -48,7 +48,7 @@ export function MessageBubble({ msg }) {
           border: `1px solid ${isUser ? 'transparent' : T.border}`,
         }}
       >
-        {msg.text.split('\n').map((line, i) => (
+        {(msg.text || '').split('\n').map((line, i) => (
           <div key={i}>
             {line.split(/(\*\*[^*]+\*\*)/g).map((part, j) =>
               part.startsWith('**') && part.endsWith('**') ? (

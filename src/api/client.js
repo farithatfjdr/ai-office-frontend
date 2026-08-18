@@ -7,7 +7,7 @@ export function getToken() {
 export async function apiFetch(path, options = {}) {
   const token = getToken()
   const headers = {
-    'Content-Type': 'application/json',
+    ...(options.body ? { 'Content-Type': 'application/json' } : {}),
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
   }
@@ -45,9 +45,50 @@ export async function sendMessage(agentId, content, projectContext = '', thread 
   })
 }
 
+function mergeMessageLists(...lists) {
+  const byId = new Map()
+  const unlabeled = []
+  for (const list of lists) {
+    for (const message of list || []) {
+      if (message?.id) {
+        if (!byId.has(message.id)) byId.set(message.id, message)
+      } else if (message) {
+        unlabeled.push(message)
+      }
+    }
+  }
+  return [...byId.values(), ...unlabeled].sort((a, b) => {
+    const ta = a.createdAt ? Date.parse(a.createdAt) : NaN
+    const tb = b.createdAt ? Date.parse(b.createdAt) : NaN
+    if (Number.isNaN(ta) && Number.isNaN(tb)) return 0
+    if (Number.isNaN(ta)) return 1
+    if (Number.isNaN(tb)) return -1
+    return ta - tb
+  })
+}
+
 export async function getMessages(agentId) {
   const id = encodeURIComponent(agentId)
-  return apiFetch(`/api/message/${id}?thread=${id}`)
+  if (agentId !== 'warroom') {
+    return apiFetch(`/api/message/${id}`)
+  }
+
+  let warroomMessages = []
+  let warroomError = null
+  try {
+    const primary = await apiFetch(`/api/message/${id}`)
+    warroomMessages = primary.messages || []
+  } catch (err) {
+    warroomError = err
+  }
+
+  try {
+    const extra = await apiFetch('/api/message/chief-of-staff')
+    return { messages: mergeMessageLists(warroomMessages, extra.messages) }
+  } catch {
+    if (warroomError) throw warroomError
+    return { messages: warroomMessages }
+  }
 }
 
 export function toApiAgentId(agentId) {

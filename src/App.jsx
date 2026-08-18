@@ -44,12 +44,19 @@ function OfficeApp() {
       .then((data) => {
         const loaded = (data.messages || [])
           .filter((m) => m.role === 'user' || m.role === 'assistant')
-          .map((m) => ({ role: m.role, text: m.content }))
+          .map((m) => ({ role: m.role, text: m.content || m.text || '' }))
         if (cancelled || loaded.length === 0) return
         setMessagesByAgent((prev) => ({ ...prev, [chatId]: loaded }))
       })
-      .catch(() => {
-        // History endpoint may not be deployed yet; keep local welcome messages.
+      .catch((err) => {
+        if (cancelled) return
+        setMessagesByAgent((prev) => ({
+          ...prev,
+          [chatId]: [
+            ...(prev[chatId] || []),
+            { role: 'tool', text: `Could not load chat history: ${err.message}` },
+          ],
+        }))
       })
 
     return () => {
