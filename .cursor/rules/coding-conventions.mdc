@@ -8,7 +8,7 @@ alwaysApply: true
 - **JavaScript + JSX only.** Do not add TypeScript or rename files to `.tsx` / `.ts`.
 - **Functional components** and hooks. No class components.
 - **API calls live in `src/api/client.js`.** Views and components must not call `fetch` directly. Add a helper there, then use it.
-- **Keep War Room mapping in `toApiAgentId()`.** UI id `warroom` → API id `chief-of-staff`. Never send `warroom` to the backend.
+- **War Room chat id is `warroom` on the API.** GET and POST `/api/message/warroom` (backend maps the LLM to Chief of Staff). Always send `thread: warroom` on POST. `toApiAgentId()` is only for project lookup, not for chat history.
 - **Theme colors come from `T` in `src/data/constants.js`.** Match existing components: Tailwind for layout/spacing, `style={{ color: T.* }}` for palette colors. Do not invent a parallel color system.
 - **Mock data stays in `src/data/constants.js`** until real endpoints exist. When wiring an API, replace the constant usage in that view — do not scatter new hardcoded lists.
 - **Auth:** JWT in `localStorage` under `token`. Use `AuthContext` (`useAuth`) for login/logout/session. Do not read the token ad hoc in random components.
