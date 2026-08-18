@@ -1,0 +1,18 @@
+---
+description: Commit and push before any Coolify redeploy request
+alwaysApply: true
+---
+
+# Commit before redeploy
+
+If you are about to tell the user to redeploy Coolify (or any production deploy):
+
+1. Commit the relevant work in this repo.
+2. Push to GitHub (`origin`) so the commit exists on the remote.
+3. Only then say “redeploy.”
+
+Do not ask the user to redeploy uncommitted or unpushed work. Do not commit secrets. Do not push `--force` to main. If a main push looks risky, use a branch + PR instead.
+
+This is an exception to “only commit when asked”: a redeploy request counts as asking to publish the work.
+
+Keep `ai-office-backend` in its own repo. Do not commit or push backend files here.
