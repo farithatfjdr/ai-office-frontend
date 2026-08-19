@@ -21,6 +21,7 @@ Stack: Vite 8, React 19, Tailwind CSS v4, lucide-react. JavaScript + JSX (no Typ
 - @mention hand-off between agents
 - "Turn into task/project" from War Room chat (POST `/api/tasks` / `/api/projects`)
 - Projects and tasks load from the API after login (empty list is valid)
+- Files (`GET`/`POST` `/api/files`, JWT download) and activity (`GET /api/activity`) from the live API
 - Dark-themed, responsive UI with collapsible panels
 - Dockerized frontend with nginx SPA config
 
@@ -42,6 +43,9 @@ Enum mapping (API `todo` / `in_progress` / `high` ↔ UI `Todo` / `In Progress` 
 | `/api/projects/:id` | GET/PATCH/DELETE | One project | `getProject()` / `updateProject()` / `deleteProject()` |
 | `/api/tasks` | GET/POST | List / create tasks | `getTasks()` / `createTask()` |
 | `/api/tasks/:id` | GET/PATCH/DELETE | One task | `getTask()` / `updateTask()` / `deleteTask()` |
+| `/api/files` | GET/POST | List / upload multipart `file` (max 25MB) | `getFiles()` / `uploadFile()` |
+| `/api/files/:id/download` | GET | Attachment stream (JWT, not JSON) | `downloadFile()` |
+| `/api/activity` | GET | Newest-first feed | `getActivity()` |
 
 War Room uses API id `warroom` for GET and POST (history key). Backend maps that thread to the Chief of Staff model. `toApiAgentId()` is only for matching projects to a department.
 
@@ -51,11 +55,9 @@ War Room uses API id `warroom` for GET and POST (history key). Backend maps that
 
 | Surface | Source |
 |---------|--------|
-| Activity | `INITIAL_ACTIVITY` |
-| Files | hardcoded `FILES` array |
 | Notifications | hardcoded `NOTIFICATIONS` |
 
-`INITIAL_PROJECTS` / `INITIAL_TASKS` remain in `constants.js` until files/activity work lands; `App.jsx` does not import them.
+`INITIAL_PROJECTS` / `INITIAL_TASKS` remain unused leftovers in `constants.js`; `App.jsx` does not import them.
 
 ## Key files
 
@@ -63,7 +65,7 @@ War Room uses API id `warroom` for GET and POST (history key). Backend maps that
 |------|------|
 | `src/main.jsx` | React root, StrictMode + AuthProvider |
 | `src/App.jsx` | Login gate + office shell / views |
-| `src/api/client.js` | Fetch wrapper, JWT, agent id mapping, project/task CRUD |
+| `src/api/client.js` | Fetch wrapper, JWT, agent id mapping, project/task/file/activity helpers |
 | `src/context/AuthContext.jsx` | Token, verify-on-load, login/logout |
 | `src/data/constants.js` | Theme `T`, agents, mock data |
 | `src/components/*` | Sidebar, top bar, workspace, panels, views |

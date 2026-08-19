@@ -6,8 +6,9 @@ export function getToken() {
 
 export async function apiFetch(path, options = {}) {
   const token = getToken()
+  const isForm = typeof FormData !== 'undefined' && options.body instanceof FormData
   const headers = {
-    ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+    ...(!isForm && options.body ? { 'Content-Type': 'application/json' } : {}),
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...options.headers,
   }
@@ -219,4 +220,41 @@ export async function updateTask(id, fields) {
 
 export async function deleteTask(id) {
   return apiFetch(`/api/tasks/${encodeURIComponent(id)}`, { method: 'DELETE' })
+}
+
+export async function getFiles() {
+  const data = await apiFetch('/api/files')
+  return { files: data.files || [] }
+}
+
+export async function uploadFile(file) {
+  const body = new FormData()
+  body.append('file', file)
+  const data = await apiFetch('/api/files', { method: 'POST', body })
+  return { file: data.file }
+}
+
+export async function downloadFile(id, name) {
+  const token = getToken()
+  const res = await fetch(`${API_BASE}/api/files/${encodeURIComponent(id)}/download`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  })
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}))
+    throw new Error(data.error || res.statusText || 'Download failed')
+  }
+  const blob = await res.blob()
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = name || 'file'
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(url)
+}
+
+export async function getActivity() {
+  const data = await apiFetch('/api/activity')
+  return { activity: data.activity || [] }
 }

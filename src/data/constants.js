@@ -61,16 +61,7 @@ export const INITIAL_TASKS = [
   { id: 't8', title: 'Draft launch campaign brief', project: 'Social Enterprise', agent: 'marketing', status: 'In Progress', priority: 'Low', due: 'Aug 20' },
 ]
 
-export const FILES = ['advertising-data.csv', 'research-notes.md', 'report.md']
 export const TOOLS = ['Apify', 'Web Search', 'Database', 'n8n']
-
-export const INITIAL_ACTIVITY = [
-  { time: '10:31', text: 'Research AI started task' },
-  { time: '10:32', text: 'Apify scraper launched' },
-  { time: '10:34', text: '143 records collected' },
-  { time: '10:35', text: 'AI analysis started' },
-  { time: '10:38', text: 'Report draft generated' },
-]
 
 export const NOTIFICATIONS = [
   { icon: '🔔', text: 'Research completed TikTok analysis' },

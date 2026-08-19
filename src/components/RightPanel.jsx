@@ -1,8 +1,8 @@
 import { ChevronLeft, ChevronRight, FileText } from 'lucide-react'
-import { FILES, STATUS_META, TOOLS, T } from '../data/constants'
+import { STATUS_META, TOOLS, T } from '../data/constants'
 import { PanelBlock, StatusDot, TaskStatusIcon } from './shared'
 
-export default function RightPanel({ agent, collapsed, setCollapsed, tasks, projects, activity }) {
+export default function RightPanel({ agent, collapsed, setCollapsed, tasks, projects, files = [], activity = [], onDownloadFile }) {
   if (collapsed) {
     return (
       <div className="hidden lg:flex flex-col items-center pt-4 flex-shrink-0" style={{ width: 40, backgroundColor: T.surface, borderLeft: `1px solid ${T.border}` }}>
@@ -60,11 +60,19 @@ export default function RightPanel({ agent, collapsed, setCollapsed, tasks, proj
 
       <PanelBlock title="Files">
         <div className="flex flex-col gap-1.5">
-          {FILES.map((f) => (
-            <div key={f} className="flex items-center gap-2 text-[12.5px]" style={{ color: T.textDim }}>
+          {(files || []).length === 0 ? (
+            <div className="text-[12px]" style={{ color: T.textFaint }}>No files yet</div>
+          ) : (files || []).slice(0, 8).map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              onClick={() => onDownloadFile?.(f)}
+              className="flex items-center gap-2 text-[12.5px] text-left"
+              style={{ color: T.textDim }}
+            >
               <FileText size={13} style={{ color: T.textFaint }} />
-              <span className="truncate">{f}</span>
-            </div>
+              <span className="truncate">{f.name}</span>
+            </button>
           ))}
         </div>
       </PanelBlock>
@@ -82,8 +90,10 @@ export default function RightPanel({ agent, collapsed, setCollapsed, tasks, proj
       <PanelBlock title="Activity" last>
         <div className="flex flex-col gap-2.5 relative pl-3.5">
           <div className="absolute left-[3px] top-1 bottom-1 w-px" style={{ backgroundColor: T.border }} />
-          {[...activity].reverse().slice(0, 6).map((a, i) => (
-            <div key={i} className="relative">
+          {activity.length === 0 ? (
+            <div className="text-[12px]" style={{ color: T.textFaint }}>No activity yet</div>
+          ) : activity.slice(0, 6).map((a) => (
+            <div key={a.id || `${a.createdAt}-${a.text}`} className="relative">
               <div className="absolute -left-[15px] top-[3px] w-[6px] h-[6px] rounded-full" style={{ backgroundColor: T.accent }} />
               <div className="text-[10.5px] font-mono" style={{ color: T.textFaint }}>{a.time}</div>
               <div className="text-[12px]" style={{ color: T.textDim }}>{a.text}</div>
@@ -95,11 +105,11 @@ export default function RightPanel({ agent, collapsed, setCollapsed, tasks, proj
   )
 }
 
-export function RightPanelForceVisible({ agent, tasks, projects, activity }) {
+export function RightPanelForceVisible({ agent, tasks, projects, files, activity, onDownloadFile }) {
   return (
     <div style={{ display: 'block' }}>
       <div className="[&>div]:!flex">
-        <RightPanel agent={agent} collapsed={false} setCollapsed={() => {}} tasks={tasks} projects={projects} activity={activity} />
+        <RightPanel agent={agent} collapsed={false} setCollapsed={() => {}} tasks={tasks} projects={projects} files={files} activity={activity} onDownloadFile={onDownloadFile} />
       </div>
     </div>
   )

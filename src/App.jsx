@@ -3,6 +3,7 @@ import { X } from 'lucide-react'
 import {
   sendMessage, getMessages, toApiAgentId,
   getProjects, getTasks, createProject, createTask,
+  getFiles, uploadFile, downloadFile, getActivity,
 } from './api/client'
 import { useAuth } from './context/AuthContext'
 import Login from './components/Login'
@@ -16,7 +17,6 @@ import {
 import {
   AGENTS,
   buildInitialMessages,
-  INITIAL_ACTIVITY,
   T,
   WARROOM_AGENT,
 } from './data/constants'
@@ -30,8 +30,11 @@ function OfficeApp() {
   const [mobileRightOpen, setMobileRightOpen] = useState(false)
   const [tasks, setTasks] = useState([])
   const [projects, setProjects] = useState([])
+  const [files, setFiles] = useState([])
+  const [activity, setActivity] = useState([])
   const [boardError, setBoardError] = useState(null)
-  const [activityLog, setActivityLog] = useState(INITIAL_ACTIVITY)
+  const [filesError, setFilesError] = useState(null)
+  const [uploading, setUploading] = useState(false)
   const [messagesByAgent, setMessagesByAgent] = useState(buildInitialMessages)
   const [sendingAgent, setSendingAgent] = useState(null)
   const chatId = view.type === 'agent' || view.type === 'warroom'
@@ -53,6 +56,25 @@ function OfficeApp() {
     setBoardError(errors.join(' ') || null)
   }
 
+  const refreshActivity = async () => {
+    try {
+      const data = await getActivity()
+      setActivity(data.activity || [])
+    } catch {
+      // keep last successful feed
+    }
+  }
+
+  const refreshFiles = async () => {
+    try {
+      const data = await getFiles()
+      setFiles(data.files || [])
+      setFilesError(null)
+    } catch (err) {
+      setFilesError(err.message || 'Could not load files')
+    }
+  }
+
   const refreshBoard = async () => {
     const [projectResult, taskResult] = await Promise.allSettled([getProjects(), getTasks()])
     applyBoardResults(projectResult, taskResult)
@@ -60,10 +82,21 @@ function OfficeApp() {
 
   useEffect(() => {
     let cancelled = false
-    Promise.allSettled([getProjects(), getTasks()]).then(([projectResult, taskResult]) => {
-      if (cancelled) return
-      applyBoardResults(projectResult, taskResult)
-    })
+    Promise.allSettled([getProjects(), getTasks(), getFiles(), getActivity()]).then(
+      ([projectResult, taskResult, fileResult, activityResult]) => {
+        if (cancelled) return
+        applyBoardResults(projectResult, taskResult)
+        if (fileResult.status === 'fulfilled') {
+          setFiles(fileResult.value.files || [])
+          setFilesError(null)
+        } else {
+          setFilesError(fileResult.reason?.message || 'Could not load files')
+        }
+        if (activityResult.status === 'fulfilled') {
+          setActivity(activityResult.value.activity || [])
+        }
+      },
+    )
     return () => {
       cancelled = true
     }
@@ -133,9 +166,7 @@ function OfficeApp() {
 
       removePendingTools(uiAgentId)
       appendMessage(uiAgentId, { role: 'assistant', text: result.agentResponse.content })
-
-      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      setActivityLog((prev) => [...prev, { time, text: `${name} responded` }])
+      await refreshActivity()
     } catch (err) {
       removePendingTools(uiAgentId)
       appendMessage(uiAgentId, { role: 'assistant', text: `Something went wrong: ${err.message}` })
@@ -181,11 +212,33 @@ function OfficeApp() {
       }
 
       await refreshBoard()
-      setActivityLog((prev) => [...prev, { time: 'Now', text: `${kind === 'task' ? 'Task' : 'Project'} created in War Room → assigned to ${dept.name}: "${title}"` }])
+      await refreshActivity()
       appendMessage('warroom', { role: 'tool', text: `Created ${kind} "${title}" and assigned it to ${dept.name}.` })
       appendMessage(deptId, { role: 'tool', text: `New ${kind} from War Room: "${title}"` })
     } catch (err) {
       appendMessage('warroom', { role: 'tool', text: `Could not create ${kind}: ${err.message}` })
+    }
+  }
+
+  const handleUpload = async (file) => {
+    setUploading(true)
+    setFilesError(null)
+    try {
+      await uploadFile(file)
+      await refreshFiles()
+      await refreshActivity()
+    } catch (err) {
+      setFilesError(err.message || 'Upload failed')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const handleDownload = async (file) => {
+    try {
+      await downloadFile(file.id, file.name)
+    } catch (err) {
+      setFilesError(err.message || 'Download failed')
     }
   }
 
@@ -213,11 +266,11 @@ function OfficeApp() {
       case 'tasks':
         return <TasksView tasks={tasks} />
       case 'files':
-        return <FilesView />
+        return <FilesView files={files} uploading={uploading} error={filesError} onUpload={handleUpload} onDownload={handleDownload} />
       case 'knowledge':
         return <KnowledgeView />
       case 'activity':
-        return <ActivityView activity={activityLog} />
+        return <ActivityView activity={activity} />
       case 'settings':
         return <SettingsView />
       default:
@@ -274,7 +327,9 @@ function OfficeApp() {
                 setCollapsed={setRightCollapsed}
                 tasks={tasks}
                 projects={projects}
-                activity={activityLog}
+                files={files}
+                activity={activity}
+                onDownloadFile={handleDownload}
               />
             )}
           </div>
@@ -288,7 +343,7 @@ function OfficeApp() {
                 <X size={16} />
               </button>
               <div className="h-full overflow-y-auto">
-                <RightPanelForceVisible agent={agent} tasks={tasks} projects={projects} activity={activityLog} />
+                <RightPanelForceVisible agent={agent} tasks={tasks} projects={projects} files={files} activity={activity} onDownloadFile={handleDownload} />
               </div>
             </div>
           </div>
