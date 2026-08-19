@@ -18,14 +18,11 @@ Continue from the last unfinished item. Backend work lives in `fjdresources/ai-o
 - GitHub work-log rule: Issues + committed PRs are the record (chats are not)
 - Projects + tasks from live APIs (`GET`/`POST` `/api/projects` and `/api/tasks`); War Room create POSTs instead of local mocks
 - Coolify Auto Deploy on `main` (GitHub App webhooks; Access Bypass on `/webhooks/*`)
+- Production login + smoke ([#6](https://github.com/fjdresources/ai-office-frontend/issues/6)): TOTP after Base32 `TOTP_SECRET` + backend container recreate; live Projects/Tasks; War Room create; agent message
 
 ## Next (in order)
 
-1. **Unblock production login, then smoke-test** ([#6](https://github.com/fjdresources/ai-office-frontend/issues/6))
-   - Not a UI bug; do not reopen #4. Login is **401 Invalid code**.
-   - Coolify backend env leftover dual-stack names: [ai-office-backend#15](https://github.com/fjdresources/ai-office-backend/issues/15). Keep `TOTP_SECRET` (and `JWT_SECRET`, `OPENROUTER_API_KEY`, `CORS_ORIGIN`, `DB_PASSWORD`); delete `_PROD`/`_TEST` copies. Re-enroll Authenticator from `TOTP_SECRET` only (Base32 `A–Z` `2–7`; strip quotes and `=`). Do not use `JWT_SECRET`.
-   - After login: Projects/Tasks (live API; empty is valid), create one of each from War Room, one agent message. One Issue per anomaly on the repo that will change. Do not mix files/activity into those.
-2. **Files + activity** ([#5](https://github.com/fjdresources/ai-office-frontend/issues/5)) — next *feature* after #6
+1. **Files + activity** ([#5](https://github.com/fjdresources/ai-office-frontend/issues/5))
    - `GET /api/files` (upload/download) instead of hardcoded `FILES`
    - Activity feed endpoint instead of `INITIAL_ACTIVITY`
 

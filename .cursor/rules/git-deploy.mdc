@@ -31,4 +31,8 @@ If a merge does not show as Webhook, check GitHub App **`fjdr-ai-office`** → A
 
 ## Production TOTP (backend Coolify)
 
-Login 401 is **not** a frontend bug. Production `docker-compose.yaml` injects **`TOTP_SECRET` only**. Ignore leftover Coolify names `TOTP_SECRET_PROD` / `TOTP_SECRET_TEST` (those are local dual-stack `docker-compose.yml`). Do not enroll from `JWT_SECRET`. Google Authenticator needs Base32 (`A–Z`, `2–7`); strip quotes and `=`. Tracked as [ai-office-backend#15](https://github.com/fjdresources/ai-office-backend/issues/15) and frontend [#6](https://github.com/fjdresources/ai-office-frontend/issues/6).
+Login 401 was **not** a frontend bug (do not reopen #4). Production compose is `docker-compose.yaml` with **`TOTP_SECRET` only** (local dual-stack `docker-compose.yml` was removed in [ai-office-backend#15](https://github.com/fjdresources/ai-office-backend/issues/15) / PR 18). One Environment row: Base32 `A–Z` `2–7`, no quotes, no `=`. Do not enroll from `JWT_SECRET`.
+
+Changing `TOTP_SECRET` in the Coolify dashboard does **not** ride git Auto Deploy — recreate/redeploy the **backend** resource so Node reads the new env. Git merges to `main` still Auto Deploy; do not click **Deploy** for those. Instance API stays off.
+
+Smoke [#6](https://github.com/fjdresources/ai-office-frontend/issues/6) passed 2026-08-19 after that recreate.
