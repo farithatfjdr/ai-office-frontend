@@ -15,6 +15,7 @@ Continue from the last unfinished item. Backend work lives in `fjdresources/ai-o
 - Repo hygiene: `.gitignore`, `.env.example`, `.cursor/environment.json`, Cursor rules
 - Persist messages + MFA secret from `TOTP_SECRET` (backend)
 - Load chat history per agent/War Room in this UI
+- GitHub work-log rule: Issues + committed PRs are the record (chats are not)
 
 ## Next (in order)
 
