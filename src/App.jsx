@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
-import { sendMessage, getMessages, toApiAgentId } from './api/client'
+import {
+  sendMessage, getMessages, toApiAgentId,
+  getProjects, getTasks, createProject, createTask,
+} from './api/client'
 import { useAuth } from './context/AuthContext'
 import Login from './components/Login'
 import LeftSidebar from './components/LeftSidebar'
@@ -14,8 +17,6 @@ import {
   AGENTS,
   buildInitialMessages,
   INITIAL_ACTIVITY,
-  INITIAL_PROJECTS,
-  INITIAL_TASKS,
   T,
   WARROOM_AGENT,
 } from './data/constants'
@@ -27,14 +28,46 @@ function OfficeApp() {
   const [rightCollapsed, setRightCollapsed] = useState(false)
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const [mobileRightOpen, setMobileRightOpen] = useState(false)
-  const [tasks, setTasks] = useState(INITIAL_TASKS)
-  const [projects, setProjects] = useState(INITIAL_PROJECTS)
+  const [tasks, setTasks] = useState([])
+  const [projects, setProjects] = useState([])
+  const [boardError, setBoardError] = useState(null)
   const [activityLog, setActivityLog] = useState(INITIAL_ACTIVITY)
   const [messagesByAgent, setMessagesByAgent] = useState(buildInitialMessages)
   const [sendingAgent, setSendingAgent] = useState(null)
   const chatId = view.type === 'agent' || view.type === 'warroom'
     ? (view.type === 'warroom' ? 'warroom' : view.id)
     : null
+
+  const applyBoardResults = (projectResult, taskResult) => {
+    const errors = []
+    if (projectResult.status === 'fulfilled') {
+      setProjects(projectResult.value.projects || [])
+    } else {
+      errors.push(`Could not load projects: ${projectResult.reason?.message || projectResult.reason}`)
+    }
+    if (taskResult.status === 'fulfilled') {
+      setTasks(taskResult.value.tasks || [])
+    } else {
+      errors.push(`Could not load tasks: ${taskResult.reason?.message || taskResult.reason}`)
+    }
+    setBoardError(errors.join(' ') || null)
+  }
+
+  const refreshBoard = async () => {
+    const [projectResult, taskResult] = await Promise.allSettled([getProjects(), getTasks()])
+    applyBoardResults(projectResult, taskResult)
+  }
+
+  useEffect(() => {
+    let cancelled = false
+    Promise.allSettled([getProjects(), getTasks()]).then(([projectResult, taskResult]) => {
+      if (cancelled) return
+      applyBoardResults(projectResult, taskResult)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   useEffect(() => {
     if (!chatId) return undefined
@@ -134,19 +167,26 @@ function OfficeApp() {
     await callAgentApi(agentId, text)
   }
 
-  const handleCreate = (kind, rawText, deptId) => {
+  const handleCreate = async (kind, rawText, deptId) => {
     const dept = AGENTS.find((a) => a.id === deptId)
     const title = rawText.replace(/\*\*/g, '').split('\n')[0].slice(0, 80)
 
-    if (kind === 'task') {
-      setTasks((prev) => [...prev, { id: `t${Date.now()}`, title, project: 'From War Room', agent: deptId, status: 'Todo', priority: 'Medium', due: 'Unscheduled' }])
-    } else {
-      setProjects((prev) => [...prev, { id: `p${Date.now()}`, name: title, agent: deptId, tasks: 1, done: 0 }])
-    }
+    try {
+      if (kind === 'task') {
+        const { task } = await createTask({ title, project: 'From War Room', agent: deptId })
+        setTasks((prev) => [...prev, task])
+      } else {
+        const { project } = await createProject({ name: title, agent: deptId })
+        setProjects((prev) => [...prev, project])
+      }
 
-    setActivityLog((prev) => [...prev, { time: 'Now', text: `${kind === 'task' ? 'Task' : 'Project'} created in War Room → assigned to ${dept.name}: "${title}"` }])
-    appendMessage('warroom', { role: 'tool', text: `Created ${kind} "${title}" and assigned it to ${dept.name}.` })
-    appendMessage(deptId, { role: 'tool', text: `New ${kind} from War Room: "${title}"` })
+      await refreshBoard()
+      setActivityLog((prev) => [...prev, { time: 'Now', text: `${kind === 'task' ? 'Task' : 'Project'} created in War Room → assigned to ${dept.name}: "${title}"` }])
+      appendMessage('warroom', { role: 'tool', text: `Created ${kind} "${title}" and assigned it to ${dept.name}.` })
+      appendMessage(deptId, { role: 'tool', text: `New ${kind} from War Room: "${title}"` })
+    } catch (err) {
+      appendMessage('warroom', { role: 'tool', text: `Could not create ${kind}: ${err.message}` })
+    }
   }
 
   const agent = view.type === 'agent'
@@ -220,6 +260,11 @@ function OfficeApp() {
             onOpenRight={() => setMobileRightOpen(true)}
             showRightToggle={view.type === 'agent'}
           />
+          {boardError && (
+            <div className="px-4 py-2 text-[12.5px] italic flex-shrink-0" style={{ color: T.textFaint, borderBottom: `1px solid ${T.border}` }}>
+              {boardError}
+            </div>
+          )}
           <div className="flex flex-1 min-h-0">
             {renderMain()}
             {view.type === 'agent' && (

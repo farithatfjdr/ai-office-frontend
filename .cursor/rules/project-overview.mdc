@@ -19,7 +19,8 @@ Stack: Vite 8, React 19, Tailwind CSS v4, lucide-react. JavaScript + JSX (no Typ
 - TOTP login + JWT auth (frontend ↔ backend, real API)
 - Chat with 6 AI agents via `POST /api/message/:agentId` (real API)
 - @mention hand-off between agents
-- "Turn into task/project" from War Room chat
+- "Turn into task/project" from War Room chat (POST `/api/tasks` / `/api/projects`)
+- Projects and tasks load from the API after login (empty list is valid)
 - Dark-themed, responsive UI with collapsible panels
 - Dockerized frontend with nginx SPA config
 
@@ -27,12 +28,18 @@ Stack: Vite 8, React 19, Tailwind CSS v4, lucide-react. JavaScript + JSX (no Typ
 
 JWT is stored in `localStorage`. All HTTP goes through `src/api/client.js`.
 
+Enum mapping (API `todo` / `in_progress` / `high` ↔ UI `Todo` / `In Progress` / `High`, plus `due` null ↔ `Unscheduled`) lives only in `client.js`. Views keep display labels.
+
 | Endpoint | Method | Purpose | Helper |
 |----------|--------|---------|--------|
 | `/api/auth/login` | POST | TOTP → `{ token }` | `login()` |
 | `/api/auth/verify` | GET | Verify JWT → `{ user }` | `verifyToken()` |
 | `/api/message/:agentId` | POST | Agent chat | `sendMessage()` |
 | `/api/message/:agentId` | GET | Chat history | `getMessages()` |
+| `/api/projects` | GET/POST | List / create projects | `getProjects()` / `createProject()` |
+| `/api/projects/:id` | GET/PATCH/DELETE | One project | `getProject()` / `updateProject()` / `deleteProject()` |
+| `/api/tasks` | GET/POST | List / create tasks | `getTasks()` / `createTask()` |
+| `/api/tasks/:id` | GET/PATCH/DELETE | One task | `getTask()` / `updateTask()` / `deleteTask()` |
 
 War Room uses API id `warroom` for GET and POST (history key). Backend maps that thread to the Chief of Staff model. `toApiAgentId()` is only for matching projects to a department.
 
@@ -42,11 +49,11 @@ War Room uses API id `warroom` for GET and POST (history key). Backend maps that
 
 | Surface | Source |
 |---------|--------|
-| Projects | `INITIAL_PROJECTS` (5 projects) |
-| Tasks | `INITIAL_TASKS` (8 tasks), React state only |
 | Activity | `INITIAL_ACTIVITY` |
 | Files | hardcoded `FILES` array |
 | Notifications | hardcoded `NOTIFICATIONS` |
+
+`INITIAL_PROJECTS` / `INITIAL_TASKS` remain in `constants.js` until files/activity work lands; `App.jsx` does not import them.
 
 ## Key files
 
@@ -54,7 +61,7 @@ War Room uses API id `warroom` for GET and POST (history key). Backend maps that
 |------|------|
 | `src/main.jsx` | React root, StrictMode + AuthProvider |
 | `src/App.jsx` | Login gate + office shell / views |
-| `src/api/client.js` | Fetch wrapper, JWT, agent id mapping |
+| `src/api/client.js` | Fetch wrapper, JWT, agent id mapping, project/task CRUD |
 | `src/context/AuthContext.jsx` | Token, verify-on-load, login/logout |
 | `src/data/constants.js` | Theme `T`, agents, mock data |
 | `src/components/*` | Sidebar, top bar, workspace, panels, views |
