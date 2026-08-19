@@ -94,3 +94,129 @@ export async function getMessages(agentId) {
 export function toApiAgentId(agentId) {
   return agentId === 'warroom' ? 'chief-of-staff' : agentId
 }
+
+const TASK_STATUS_TO_UI = {
+  todo: 'Todo',
+  in_progress: 'In Progress',
+  waiting: 'Waiting',
+  done: 'Done',
+}
+const TASK_STATUS_TO_API = {
+  Todo: 'todo',
+  'In Progress': 'in_progress',
+  Waiting: 'waiting',
+  Done: 'done',
+}
+const TASK_PRIORITY_TO_UI = { high: 'High', medium: 'Medium', low: 'Low' }
+const TASK_PRIORITY_TO_API = { High: 'high', Medium: 'medium', Low: 'low' }
+const PROJECT_STATUS_TO_UI = { active: 'Active', archived: 'Archived' }
+const PROJECT_STATUS_TO_API = { Active: 'active', Archived: 'archived' }
+
+function mapEnum(value, table) {
+  if (value == null || value === '') return value
+  return table[value] || value
+}
+
+export function toUiProject(project) {
+  if (!project) return project
+  return {
+    ...project,
+    status: mapEnum(project.status, PROJECT_STATUS_TO_UI),
+    tasks: project.tasks || 0,
+    done: project.done || 0,
+  }
+}
+
+export function toUiTask(task) {
+  if (!task) return task
+  return {
+    ...task,
+    status: mapEnum(task.status, TASK_STATUS_TO_UI),
+    priority: mapEnum(task.priority, TASK_PRIORITY_TO_UI),
+    due: task.due || 'Unscheduled',
+    project: task.project || '',
+  }
+}
+
+function toApiProjectBody(fields = {}) {
+  const body = {}
+  if (fields.name !== undefined) body.name = fields.name
+  if (fields.agent !== undefined) body.agent = fields.agent
+  if (fields.context !== undefined) body.context = fields.context
+  if (fields.status !== undefined) body.status = mapEnum(fields.status, PROJECT_STATUS_TO_API)
+  return body
+}
+
+function toApiTaskBody(fields = {}) {
+  const body = {}
+  if (fields.title !== undefined) body.title = fields.title
+  if (fields.projectId !== undefined) body.projectId = fields.projectId
+  if (fields.project !== undefined) body.project = fields.project
+  if (fields.agent !== undefined) body.agent = fields.agent
+  if (fields.status !== undefined) body.status = mapEnum(fields.status, TASK_STATUS_TO_API)
+  if (fields.priority !== undefined) body.priority = mapEnum(fields.priority, TASK_PRIORITY_TO_API)
+  if (fields.due !== undefined) {
+    body.due = fields.due === 'Unscheduled' || fields.due === '' ? null : fields.due
+  }
+  return body
+}
+
+export async function getProjects() {
+  const data = await apiFetch('/api/projects')
+  return { projects: (data.projects || []).map(toUiProject) }
+}
+
+export async function getProject(id) {
+  const data = await apiFetch(`/api/projects/${encodeURIComponent(id)}`)
+  return { project: toUiProject(data.project) }
+}
+
+export async function createProject(fields) {
+  const data = await apiFetch('/api/projects', {
+    method: 'POST',
+    body: JSON.stringify(toApiProjectBody(fields)),
+  })
+  return { project: toUiProject(data.project) }
+}
+
+export async function updateProject(id, fields) {
+  const data = await apiFetch(`/api/projects/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(toApiProjectBody(fields)),
+  })
+  return { project: toUiProject(data.project) }
+}
+
+export async function deleteProject(id) {
+  return apiFetch(`/api/projects/${encodeURIComponent(id)}`, { method: 'DELETE' })
+}
+
+export async function getTasks() {
+  const data = await apiFetch('/api/tasks')
+  return { tasks: (data.tasks || []).map(toUiTask) }
+}
+
+export async function getTask(id) {
+  const data = await apiFetch(`/api/tasks/${encodeURIComponent(id)}`)
+  return { task: toUiTask(data.task) }
+}
+
+export async function createTask(fields) {
+  const data = await apiFetch('/api/tasks', {
+    method: 'POST',
+    body: JSON.stringify(toApiTaskBody(fields)),
+  })
+  return { task: toUiTask(data.task) }
+}
+
+export async function updateTask(id, fields) {
+  const data = await apiFetch(`/api/tasks/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(toApiTaskBody(fields)),
+  })
+  return { task: toUiTask(data.task) }
+}
+
+export async function deleteTask(id) {
+  return apiFetch(`/api/tasks/${encodeURIComponent(id)}`, { method: 'DELETE' })
+}

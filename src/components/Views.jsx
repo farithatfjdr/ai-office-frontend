@@ -5,33 +5,40 @@ import { AGENTS, FILES, T } from '../data/constants'
 import { NewButton, TaskStatusIcon, ViewHeader } from './shared'
 
 export function ProjectsView({ projects }) {
+  const activeCount = projects.filter((p) => p.status !== 'Archived').length
+
   return (
     <div className="flex-1 flex flex-col overflow-y-auto" style={{ backgroundColor: T.bg }}>
-      <ViewHeader title="Projects" subtitle={`${projects.length} active`} action={<NewButton label="New project" />} />
-      <div className="p-6 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-        {projects.map((p) => {
-          const agent = AGENTS.find((a) => a.id === p.agent)
-          return (
-            <div key={p.id} className="rounded-lg p-4" style={{ backgroundColor: T.surface, border: `1px solid ${T.border}` }}>
-              <div className="flex items-center gap-2 mb-3">
-                <FolderKanban size={15} style={{ color: T.textFaint }} />
-                <span className="text-[13.5px] font-medium flex-1 truncate" style={{ color: T.text }}>{p.name}</span>
-                <MoreHorizontal size={14} style={{ color: T.textFaint }} />
-              </div>
-              <div className="text-[11.5px] mb-3" style={{ color: T.textFaint }}>{p.done} / {p.tasks} tasks complete</div>
-              <div className="w-full h-1.5 rounded-full overflow-hidden mb-3" style={{ backgroundColor: T.borderSoft }}>
-                <div className="h-full rounded-full" style={{ width: `${(p.done / p.tasks) * 100}%`, backgroundColor: T.accent }} />
-              </div>
-              {agent && (
-                <div className="flex items-center gap-1.5">
-                  <agent.icon size={12} style={{ color: T.textFaint }} />
-                  <span className="text-[11px]" style={{ color: T.textDim }}>{agent.name}</span>
+      <ViewHeader title="Projects" subtitle={`${activeCount} active`} action={<NewButton label="New project" />} />
+      {projects.length === 0 ? (
+        <div className="p-6 text-[13px]" style={{ color: T.textFaint }}>No projects yet</div>
+      ) : (
+        <div className="p-6 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+          {projects.map((p) => {
+            const agent = AGENTS.find((a) => a.id === p.agent)
+            const progress = p.tasks ? (p.done / p.tasks) * 100 : 0
+            return (
+              <div key={p.id} className="rounded-lg p-4" style={{ backgroundColor: T.surface, border: `1px solid ${T.border}` }}>
+                <div className="flex items-center gap-2 mb-3">
+                  <FolderKanban size={15} style={{ color: T.textFaint }} />
+                  <span className="text-[13.5px] font-medium flex-1 truncate" style={{ color: T.text }}>{p.name}</span>
+                  <MoreHorizontal size={14} style={{ color: T.textFaint }} />
                 </div>
-              )}
-            </div>
-          )
-        })}
-      </div>
+                <div className="text-[11.5px] mb-3" style={{ color: T.textFaint }}>{p.done} / {p.tasks} tasks complete</div>
+                <div className="w-full h-1.5 rounded-full overflow-hidden mb-3" style={{ backgroundColor: T.borderSoft }}>
+                  <div className="h-full rounded-full" style={{ width: `${progress}%`, backgroundColor: T.accent }} />
+                </div>
+                {agent && (
+                  <div className="flex items-center gap-1.5">
+                    <agent.icon size={12} style={{ color: T.textFaint }} />
+                    <span className="text-[11px]" style={{ color: T.textDim }}>{agent.name}</span>
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }

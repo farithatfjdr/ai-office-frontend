@@ -35,7 +35,7 @@ export default function RightPanel({ agent, collapsed, setCollapsed, tasks, proj
             </div>
             <div className="text-[11px] mb-1" style={{ color: T.textFaint }}>{project.done} / {project.tasks} stages</div>
             <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: T.borderSoft }}>
-              <div className="h-full rounded-full" style={{ width: `${(project.done / project.tasks) * 100}%`, backgroundColor: T.accent }} />
+              <div className="h-full rounded-full" style={{ width: `${project.tasks ? (project.done / project.tasks) * 100 : 0}%`, backgroundColor: T.accent }} />
             </div>
           </>
         ) : (
@@ -45,7 +45,9 @@ export default function RightPanel({ agent, collapsed, setCollapsed, tasks, proj
 
       <PanelBlock title="Tasks">
         <div className="flex flex-col gap-1.5">
-          {(relatedTasks.length ? relatedTasks : tasks.slice(0, 3)).map((t) => (
+          {relatedTasks.length === 0 ? (
+            <div className="text-[12px]" style={{ color: T.textFaint }}>No tasks yet</div>
+          ) : relatedTasks.map((t) => (
             <div key={t.id} className="flex items-center gap-2 text-[12.5px]">
               <TaskStatusIcon status={t.status} />
               <span className="truncate flex-1" style={{ color: t.status === 'Done' ? T.textFaint : T.text, textDecoration: t.status === 'Done' ? 'line-through' : 'none' }}>
