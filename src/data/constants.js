@@ -61,8 +61,6 @@ export const INITIAL_TASKS = [
   { id: 't8', title: 'Draft launch campaign brief', project: 'Social Enterprise', agent: 'marketing', status: 'In Progress', priority: 'Low', due: 'Aug 20' },
 ]
 
-export const TOOLS = ['Apify', 'Web Search', 'Database', 'n8n']
-
 export const AGENT_WELCOME = (name) =>
   `You're talking with **${name}**. Ask a question, hand off a task, or @mention another employee to loop them in.`
 

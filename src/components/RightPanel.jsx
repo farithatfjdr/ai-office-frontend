@@ -1,8 +1,8 @@
 import { ChevronLeft, ChevronRight, FileText } from 'lucide-react'
-import { STATUS_META, TOOLS, T } from '../data/constants'
+import { STATUS_META, T } from '../data/constants'
 import { PanelBlock, StatusDot, TaskStatusIcon } from './shared'
 
-export default function RightPanel({ agent, collapsed, setCollapsed, tasks, projects, files = [], activity = [], onDownloadFile }) {
+export default function RightPanel({ agent, collapsed, setCollapsed, tasks, projects, files = [], activity = [], tools = [], onDownloadFile }) {
   if (collapsed) {
     return (
       <div className="hidden lg:flex flex-col items-center pt-4 flex-shrink-0" style={{ width: 40, backgroundColor: T.surface, borderLeft: `1px solid ${T.border}` }}>
@@ -79,9 +79,11 @@ export default function RightPanel({ agent, collapsed, setCollapsed, tasks, proj
 
       <PanelBlock title="Tools">
         <div className="flex flex-wrap gap-1.5">
-          {TOOLS.map((tool) => (
-            <span key={tool} className="text-[11px] px-2 py-1 rounded-md" style={{ backgroundColor: T.surfaceRaised, color: T.textDim, border: `1px solid ${T.border}` }}>
-              {tool}
+          {tools.length === 0 ? (
+            <div className="text-[12px]" style={{ color: T.textFaint }}>No tools yet</div>
+          ) : tools.map((tool) => (
+            <span key={tool.id || tool.name} className="text-[11px] px-2 py-1 rounded-md" style={{ backgroundColor: T.surfaceRaised, color: T.textDim, border: `1px solid ${T.border}` }}>
+              {tool.name}
             </span>
           ))}
         </div>
@@ -105,11 +107,11 @@ export default function RightPanel({ agent, collapsed, setCollapsed, tasks, proj
   )
 }
 
-export function RightPanelForceVisible({ agent, tasks, projects, files, activity, onDownloadFile }) {
+export function RightPanelForceVisible({ agent, tasks, projects, files, activity, tools, onDownloadFile }) {
   return (
     <div style={{ display: 'block' }}>
       <div className="[&>div]:!flex">
-        <RightPanel agent={agent} collapsed={false} setCollapsed={() => {}} tasks={tasks} projects={projects} files={files} activity={activity} onDownloadFile={onDownloadFile} />
+        <RightPanel agent={agent} collapsed={false} setCollapsed={() => {}} tasks={tasks} projects={projects} files={files} activity={activity} tools={tools} onDownloadFile={onDownloadFile} />
       </div>
     </div>
   )
