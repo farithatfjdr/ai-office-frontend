@@ -28,6 +28,8 @@ Stack: Vite 8, React 19, Tailwind CSS v4, lucide-react. JavaScript + JSX (no Typ
 
 JWT is stored in `localStorage`. All HTTP goes through `src/api/client.js`.
 
+Production MFA is backend Coolify **`TOTP_SECRET`** only (see [ai-office-backend#15](https://github.com/fjdresources/ai-office-backend/issues/15)). Ignore `TOTP_SECRET_PROD` / `_TEST`. Do not use `JWT_SECRET`. Authenticator needs Base32 (`A–Z`, `2–7`); strip quotes and `=`. Login 401 is not a UI bug — do not reopen #4; continue [#6](https://github.com/fjdresources/ai-office-frontend/issues/6).
+
 Enum mapping (API `todo` / `in_progress` / `high` ↔ UI `Todo` / `In Progress` / `High`, plus `due` null ↔ `Unscheduled`) lives only in `client.js`. Views keep display labels.
 
 | Endpoint | Method | Purpose | Helper |
