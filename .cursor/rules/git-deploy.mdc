@@ -27,4 +27,8 @@ This resource: branch `main`; Advanced → Auto Deploy **Deploy on push (webhook
 
 Proven: Coolify `ai-office-frontend` history showed **Webhook** Success for merge `7035946` (PR #12) and `254d8f9` (PR #11). Older **Manual** rows are from before the Access bypass.
 
-If a merge does not show as Webhook, check GitHub App **fjdr-ai-office** → Advanced → Recent deliveries (expect **200**) and Coolify history. Do **not** fix a miss by enabling the Coolify instance API.
+If a merge does not show as Webhook, check GitHub App **`fjdr-ai-office`** → Advanced → Recent deliveries (expect **200**) and Coolify history. Do **not** fix a miss by enabling the Coolify instance API.
+
+## Production TOTP (backend Coolify)
+
+Login 401 is **not** a frontend bug. Production `docker-compose.yaml` injects **`TOTP_SECRET` only**. Ignore leftover Coolify names `TOTP_SECRET_PROD` / `TOTP_SECRET_TEST` (those are local dual-stack `docker-compose.yml`). Do not enroll from `JWT_SECRET`. Google Authenticator needs Base32 (`A–Z`, `2–7`); strip quotes and `=`. Tracked as [ai-office-backend#15](https://github.com/fjdresources/ai-office-backend/issues/15) and frontend [#6](https://github.com/fjdresources/ai-office-frontend/issues/6).

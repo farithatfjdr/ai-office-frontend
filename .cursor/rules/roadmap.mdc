@@ -21,13 +21,13 @@ Continue from the last unfinished item. Backend work lives in `fjdresources/ai-o
 
 ## Next (in order)
 
-1. **Files + activity**
+1. **Unblock production login, then smoke-test** ([#6](https://github.com/fjdresources/ai-office-frontend/issues/6))
+   - Not a UI bug; do not reopen #4. Login is **401 Invalid code**.
+   - Coolify backend env leftover dual-stack names: [ai-office-backend#15](https://github.com/fjdresources/ai-office-backend/issues/15). Keep `TOTP_SECRET` (and `JWT_SECRET`, `OPENROUTER_API_KEY`, `CORS_ORIGIN`, `DB_PASSWORD`); delete `_PROD`/`_TEST` copies. Re-enroll Authenticator from `TOTP_SECRET` only (Base32 `A–Z` `2–7`; strip quotes and `=`). Do not use `JWT_SECRET`.
+   - After login: Projects/Tasks (live API; empty is valid), create one of each from War Room, one agent message. One Issue per anomaly on the repo that will change. Do not mix files/activity into those.
+2. **Files + activity** ([#5](https://github.com/fjdresources/ai-office-frontend/issues/5)) — next *feature* after #6
    - `GET /api/files` (upload/download) instead of hardcoded `FILES`
    - Activity feed endpoint instead of `INITIAL_ACTIVITY`
-2. **Frontend Coolify smoke-test**
-   - Confirm https://ai-office.fjdresources.com serves this build
-   - Login, open Projects/Tasks (not the old 5/8 mocks), create one of each from War Room
-   - One agent message against production API
 
 ## Known low-priority polish
 
