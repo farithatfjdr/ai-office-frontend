@@ -17,6 +17,7 @@ Continue from the last unfinished item. Backend work lives in `fjdresources/ai-o
 - Load chat history per agent/War Room in this UI
 - GitHub work-log rule: Issues + committed PRs are the record (chats are not)
 - Projects + tasks from live APIs (`GET`/`POST` `/api/projects` and `/api/tasks`); War Room create POSTs instead of local mocks
+- Coolify Auto Deploy on `main` (GitHub App webhooks; Access Bypass on `/webhooks/*`)
 
 ## Next (in order)
 

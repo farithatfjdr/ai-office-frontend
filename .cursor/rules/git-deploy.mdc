@@ -1,18 +1,30 @@
 ---
-description: Commit and push before any Coolify redeploy request
+description: Ship via branch + PR merged to main. Coolify Auto Deploy on main.
 alwaysApply: true
 ---
 
-# Commit before redeploy
+# Ship: branch, PR, merge to main
 
-If you are about to tell the user to redeploy Coolify (or any production deploy):
+When the user asks to ship, deploy, redeploy, or put work on `main`:
 
-1. Commit the relevant work in this repo.
-2. Push to GitHub (`origin`) so the commit exists on the remote.
-3. Only then say “redeploy.”
+1. Commit on a **feature branch** (not `main`). Exception to “only commit when asked.”
+2. Push the branch to `origin`. Do not `--force` push `main`.
+3. Open a **pull request** into `main`.
+4. Merge that PR when the user wants it live (they may merge in GitHub, or say to merge).
+5. **Stop there.** Coolify Auto Deploy on this resource picks up the push to `main`. Do not tell the user to click **Deploy** unless history stays Manual.
 
-Do not ask the user to redeploy uncommitted or unpushed work. Do not commit secrets. Do not push `--force` to main. If a main push looks risky, use a branch + PR instead.
-
-This is an exception to “only commit when asked”: a redeploy request counts as asking to publish the work.
+Do **not** push commits straight to `main` unless the user explicitly says to.
 
 Keep `ai-office-backend` in its own repo. Do not commit or push backend files here.
+
+## Coolify Auto Deploy (verified 2026-08-19)
+
+GitHub App **`fjdr-ai-office`** (org install, all repos) posts to Coolify at `https://coolify.fjdresources.com/webhooks/source/github/events`. Repo Settings → Webhooks is empty; that is normal.
+
+Cloudflare Access: dashboard **Coolify Admin Only** stays TOTP. Path **Coolify GitHub webhooks** is Bypass + Everyone on `coolify.fjdresources.com/webhooks/*` (same pattern as n8n). Do not enable the Coolify instance API.
+
+This resource: branch `main`; Advanced → Auto Deploy **Deploy on push (webhooks)**.
+
+Proven: Coolify `ai-office-frontend` history showed **Webhook** Success for merge `7035946` (PR #12) and `254d8f9` (PR #11). Older **Manual** rows are from before the Access bypass.
+
+If a merge does not show as Webhook, check GitHub App **fjdr-ai-office** → Advanced → Recent deliveries (expect **200**) and Coolify history. Do **not** fix a miss by enabling the Coolify instance API.
