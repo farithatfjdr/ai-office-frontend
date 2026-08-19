@@ -71,4 +71,4 @@ War Room uses API id `warroom` for GET and POST (history key). Backend maps that
 
 ## Deploy
 
-Coolify resource → this repo → `docker-compose.yaml` → domain **ai-office.fjdresources.com** port **80**. Cloudflare Tunnel origin `https://localhost:443`, **No TLS Verify** on. Backend `CORS_ORIGIN` must be `https://ai-office.fjdresources.com`.
+Coolify resource → this repo → `docker-compose.yaml` → domain **ai-office.fjdresources.com** port **80**. Cloudflare Tunnel origin `https://localhost:443`, **No TLS Verify** on. Backend `CORS_ORIGIN` must be `https://ai-office.fjdresources.com`. Merge to `main` Auto Deploys via GitHub App webhooks (Access Bypass on `coolify.fjdresources.com/webhooks/*`; dashboard stays TOTP). Do not enable the Coolify instance API. See `git-deploy.mdc`.

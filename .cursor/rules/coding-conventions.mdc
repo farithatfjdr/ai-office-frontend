@@ -14,5 +14,5 @@ alwaysApply: true
 - **Auth:** JWT in `localStorage` under `token`. Use `AuthContext` (`useAuth`) for login/logout/session. Do not read the token ad hoc in random components.
 - **No secrets in git.** `.env` / `.env.local` are ignored. Document new public Vite vars in `.env.example` only.
 - **Repos stay separate.** Do not merge this frontend into the backend repo or nest `frontend/` inside it.
-- **Commit before redeploy.** Do not ask for a Coolify redeploy until the work is committed and pushed to GitHub. See `git-deploy.mdc`.
+- **Commit before deploy.** Merge to `main`; Coolify Auto Deploy picks up the push. Do not tell the user to click **Deploy** unless history stays Manual. See `git-deploy.mdc`.
 - Keep changes scoped. Do not refactor the whole shell when touching one view.
