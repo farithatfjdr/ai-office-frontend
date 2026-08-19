@@ -63,13 +63,6 @@ export const INITIAL_TASKS = [
 
 export const TOOLS = ['Apify', 'Web Search', 'Database', 'n8n']
 
-export const NOTIFICATIONS = [
-  { icon: '🔔', text: 'Research completed TikTok analysis' },
-  { icon: '⚠️', text: 'Finance needs approval on July invoices' },
-  { icon: '📄', text: 'New report generated' },
-  { icon: '⏳', text: 'Marketing waiting for your input' },
-]
-
 export const AGENT_WELCOME = (name) =>
   `You're talking with **${name}**. Ask a question, hand off a task, or @mention another employee to loop them in.`
 
