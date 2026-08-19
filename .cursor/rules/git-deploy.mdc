@@ -28,3 +28,18 @@ This resource: branch `main`; Advanced → Auto Deploy **Deploy on push (webhook
 Proven: Coolify `ai-office-frontend` history showed **Webhook** Success for merge `7035946` (PR #12) and `254d8f9` (PR #11). Older **Manual** rows are from before the Access bypass.
 
 If a merge does not show as Webhook, check GitHub App **fjdr-ai-office** → Advanced → Recent deliveries (expect **200**) and Coolify history. Do **not** fix a miss by enabling the Coolify instance API.
+
+## Confirm production is serving current `main`
+
+Vite asset names are content hashes, so a local build of `main` reproduces the deployed filename byte for byte. No login needed.
+
+```bash
+VITE_API_BASE_URL=https://api-aioffice.fjdresources.com npx vite build
+curl -s https://ai-office.fjdresources.com/ | grep -o 'src="[^"]*\.js"'
+curl -s -o /tmp/prod.js https://ai-office.fjdresources.com/assets/<hashed>.js
+diff /tmp/prod.js dist/assets/<hashed>.js
+```
+
+Same hash and a clean `diff` means the deploy is current. A different hash means Coolify has not picked up the merge — check webhook deliveries above before touching anything else.
+
+Verified 2026-08-19 at `e13482f`: production served `index-Dcpyx4KR.js` (236554 bytes) and `index-BTCvgtlk.css`, both identical to a local build. A deep path (`/tasks`) returned `index.html`, so the nginx SPA fallback works.
