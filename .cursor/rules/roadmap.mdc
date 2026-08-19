@@ -20,11 +20,11 @@ Continue from the last unfinished item. Backend work lives in `fjdresources/ai-o
 - Coolify Auto Deploy on `main` (GitHub App webhooks; Access Bypass on `/webhooks/*`)
 - Production login + smoke ([#6](https://github.com/fjdresources/ai-office-frontend/issues/6)): TOTP after Base32 `TOTP_SECRET` + backend container recreate; live Projects/Tasks; War Room create; agent message
 - Files + activity from live APIs ([#5](https://github.com/fjdresources/ai-office-frontend/issues/5))
+- Bell notifications from the live activity feed ([#7](https://github.com/fjdresources/ai-office-frontend/issues/7)); empty list is valid
 
 ## Next (in order)
 
-1. **Notifications** ([#7](https://github.com/fjdresources/ai-office-frontend/issues/7)) — still local mock data
-2. **Tools** ([#8](https://github.com/fjdresources/ai-office-frontend/issues/8)) — listed in the UI but not wired
+1. **Tools** ([#8](https://github.com/fjdresources/ai-office-frontend/issues/8)) — listed in the UI but not wired
 
 ## Known low-priority polish
 

@@ -312,6 +312,7 @@ function OfficeApp() {
             view={view}
             onOpenRight={() => setMobileRightOpen(true)}
             showRightToggle={view.type === 'agent'}
+            activity={activity}
           />
           {boardError && (
             <div className="px-4 py-2 text-[12.5px] italic flex-shrink-0" style={{ color: T.textFaint, borderBottom: `1px solid ${T.border}` }}>

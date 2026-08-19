@@ -22,6 +22,7 @@ Stack: Vite 8, React 19, Tailwind CSS v4, lucide-react. JavaScript + JSX (no Typ
 - "Turn into task/project" from War Room chat (POST `/api/tasks` / `/api/projects`)
 - Projects and tasks load from the API after login (empty list is valid)
 - Files (`GET`/`POST` `/api/files`, JWT download) and activity (`GET /api/activity`) from the live API
+- TopBar bell lists the same activity feed (empty is valid)
 - Dark-themed, responsive UI with collapsible panels
 - Dockerized frontend with nginx SPA config
 
@@ -55,7 +56,7 @@ War Room uses API id `warroom` for GET and POST (history key). Backend maps that
 
 | Surface | Source |
 |---------|--------|
-| Notifications | hardcoded `NOTIFICATIONS` |
+| Tools | hardcoded `TOOLS` |
 
 `INITIAL_PROJECTS` / `INITIAL_TASKS` remain unused leftovers in `constants.js`; `App.jsx` does not import them.
 
