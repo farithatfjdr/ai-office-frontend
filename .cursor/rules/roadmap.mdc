@@ -21,10 +21,11 @@ Continue from the last unfinished item. Backend work lives in `fjdresources/ai-o
 - Production login + smoke ([#6](https://github.com/fjdresources/ai-office-frontend/issues/6)): TOTP after Base32 `TOTP_SECRET` + backend container recreate; live Projects/Tasks; War Room create; agent message
 - Files + activity from live APIs ([#5](https://github.com/fjdresources/ai-office-frontend/issues/5))
 - Bell notifications from the live activity feed ([#7](https://github.com/fjdresources/ai-office-frontend/issues/7)); empty list is valid
+- Tools from live `GET /api/tools` ([#8](https://github.com/fjdresources/ai-office-frontend/issues/8)); composer picker POSTs selected ids; empty list is valid
 
 ## Next (in order)
 
-1. **Tools** ([#8](https://github.com/fjdresources/ai-office-frontend/issues/8)) — listed in the UI but not wired
+1. **Parse TASK: lines** ([#9](https://github.com/fjdresources/ai-office-frontend/issues/9)) — backend already creates rows; UI still does not surface `createdTasks`
 
 ## Known low-priority polish
 

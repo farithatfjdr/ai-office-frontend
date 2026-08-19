@@ -5,11 +5,13 @@ import {
 import { AGENTS, STATUS_META, T } from '../data/constants'
 import { MessageBubble, StatusDot } from './shared'
 
-export default function MainWorkspace({ agent, messages, onSend, onCreate, sending }) {
+export default function MainWorkspace({ agent, messages, onSend, onCreate, sending, tools = [] }) {
   const [input, setInput] = useState('')
   const [mentionOpen, setMentionOpen] = useState(false)
   const [mentionFilter, setMentionFilter] = useState('')
   const [actionMenu, setActionMenu] = useState(null)
+  const [toolMenuOpen, setToolMenuOpen] = useState(false)
+  const [selectedTools, setSelectedTools] = useState([])
   const scrollRef = useRef(null)
   const textareaRef = useRef(null)
 
@@ -26,6 +28,11 @@ export default function MainWorkspace({ agent, messages, onSend, onCreate, sendi
       setMentionOpen(false)
     }
   }, [input])
+
+  useEffect(() => {
+    const ids = new Set(tools.map((t) => t.id))
+    setSelectedTools((prev) => prev.filter((id) => ids.has(id)))
+  }, [tools])
 
   const mentionTargets = AGENTS.filter(
     (a) => a.id !== agent.id && a.name.toLowerCase().includes(mentionFilter)
@@ -44,9 +51,14 @@ export default function MainWorkspace({ agent, messages, onSend, onCreate, sendi
 
   const handleSend = () => {
     if (!input.trim() || sending) return
-    onSend(input.trim())
+    onSend(input.trim(), selectedTools)
     setInput('')
     setMentionOpen(false)
+    setToolMenuOpen(false)
+  }
+
+  const toggleTool = (id) => {
+    setSelectedTools((prev) => (prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]))
   }
 
   const status = STATUS_META[sending ? 'working' : agent.status] || STATUS_META.idle
@@ -131,6 +143,28 @@ export default function MainWorkspace({ agent, messages, onSend, onCreate, sendi
             ))}
           </div>
         )}
+        {toolMenuOpen && tools.length > 0 && (
+          <div className="absolute bottom-full left-5 mb-2 w-64 rounded-lg overflow-hidden z-20" style={{ backgroundColor: T.surfaceRaised, border: `1px solid ${T.border}`, boxShadow: '0 12px 32px rgba(0,0,0,0.4)' }}>
+            <div className="px-3 py-2 text-[10.5px] font-semibold tracking-widest uppercase" style={{ borderBottom: `1px solid ${T.border}`, color: T.textFaint }}>Tools for this send</div>
+            {tools.map((tool) => {
+              const on = selectedTools.includes(tool.id)
+              return (
+                <button
+                  key={tool.id}
+                  type="button"
+                  onClick={() => toggleTool(tool.id)}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-left"
+                  style={{ color: T.text }}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = T.borderSoft }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
+                >
+                  <span className="text-[12.5px] font-medium flex-1">{tool.name}</span>
+                  <span className="text-[11px]" style={{ color: on ? T.accent : T.textFaint }}>{on ? 'On' : 'Off'}</span>
+                </button>
+              )
+            })}
+          </div>
+        )}
         <div className="rounded-xl px-3.5 pt-3 pb-2" style={{ backgroundColor: T.surface, border: `1px solid ${T.border}` }}>
           <textarea
             ref={textareaRef}
@@ -141,7 +175,10 @@ export default function MainWorkspace({ agent, messages, onSend, onCreate, sendi
                 e.preventDefault()
                 handleSend()
               }
-              if (e.key === 'Escape') setMentionOpen(false)
+              if (e.key === 'Escape') {
+                setMentionOpen(false)
+                setToolMenuOpen(false)
+              }
             }}
             placeholder={agent.id === 'warroom' ? 'Think out loud, or type @ to tag an employee...' : `Ask ${agent.name} anything...`}
             rows={1}
@@ -156,7 +193,14 @@ export default function MainWorkspace({ agent, messages, onSend, onCreate, sendi
             <button onClick={openMentionPicker} title="Mention an employee" className="w-7 h-7 flex items-center justify-center rounded-md" style={{ color: T.textFaint }}>
               <AtSign size={14} />
             </button>
-            <button title="Tools" className="h-7 px-2 flex items-center gap-1 rounded-md text-[11.5px]" style={{ color: T.textFaint }}>
+            <button
+              type="button"
+              title={tools.length ? 'Tools' : 'No tools connected'}
+              disabled={!tools.length}
+              onClick={() => setToolMenuOpen((open) => !open)}
+              className="h-7 px-2 flex items-center gap-1 rounded-md text-[11.5px] disabled:opacity-40"
+              style={{ color: selectedTools.length ? T.accent : T.textFaint }}
+            >
               <Wrench size={13} /> Tools
             </button>
             <div className="flex-1" />

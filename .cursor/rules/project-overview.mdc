@@ -23,6 +23,7 @@ Stack: Vite 8, React 19, Tailwind CSS v4, lucide-react. JavaScript + JSX (no Typ
 - Projects and tasks load from the API after login (empty list is valid)
 - Files (`GET`/`POST` `/api/files`, JWT download) and activity (`GET /api/activity`) from the live API
 - TopBar bell lists the same activity feed (empty is valid)
+- Tools from `GET /api/tools`; composer Tools picker sends selected ids on chat POST
 - Dark-themed, responsive UI with collapsible panels
 - Dockerized frontend with nginx SPA config
 
@@ -38,7 +39,7 @@ Enum mapping (API `todo` / `in_progress` / `high` ↔ UI `Todo` / `In Progress` 
 |----------|--------|---------|--------|
 | `/api/auth/login` | POST | TOTP → `{ token }` | `login()` |
 | `/api/auth/verify` | GET | Verify JWT → `{ user }` | `verifyToken()` |
-| `/api/message/:agentId` | POST | Agent chat | `sendMessage()` |
+| `/api/message/:agentId` | POST | Agent chat (`tools` optional catalog ids) | `sendMessage()` |
 | `/api/message/:agentId` | GET | Chat history | `getMessages()` |
 | `/api/projects` | GET/POST | List / create projects | `getProjects()` / `createProject()` |
 | `/api/projects/:id` | GET/PATCH/DELETE | One project | `getProject()` / `updateProject()` / `deleteProject()` |
@@ -47,16 +48,11 @@ Enum mapping (API `todo` / `in_progress` / `high` ↔ UI `Todo` / `In Progress` 
 | `/api/files` | GET/POST | List / upload multipart `file` (max 25MB) | `getFiles()` / `uploadFile()` |
 | `/api/files/:id/download` | GET | Attachment stream (JWT, not JSON) | `downloadFile()` |
 | `/api/activity` | GET | Newest-first feed | `getActivity()` |
+| `/api/tools` | GET | Catalog `{ tools: [{ id, name }] }` (empty is valid) | `getTools()` |
 
 War Room uses API id `warroom` for GET and POST (history key). Backend maps that thread to the Chief of Staff model. `toApiAgentId()` is only for matching projects to a department.
 
 `VITE_API_BASE_URL` is inlined at Vite build time (see `.env.example` and the Docker `ARG`).
-
-## Mock data (never hits the backend)
-
-| Surface | Source |
-|---------|--------|
-| Tools | hardcoded `TOOLS` |
 
 `INITIAL_PROJECTS` / `INITIAL_TASKS` remain unused leftovers in `constants.js`; `App.jsx` does not import them.
 
@@ -66,7 +62,7 @@ War Room uses API id `warroom` for GET and POST (history key). Backend maps that
 |------|------|
 | `src/main.jsx` | React root, StrictMode + AuthProvider |
 | `src/App.jsx` | Login gate + office shell / views |
-| `src/api/client.js` | Fetch wrapper, JWT, agent id mapping, project/task/file/activity helpers |
+| `src/api/client.js` | Fetch wrapper, JWT, agent id mapping, project/task/file/activity/tools helpers |
 | `src/context/AuthContext.jsx` | Token, verify-on-load, login/logout |
 | `src/data/constants.js` | Theme `T`, agents, mock data |
 | `src/components/*` | Sidebar, top bar, workspace, panels, views |

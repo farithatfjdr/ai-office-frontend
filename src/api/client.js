@@ -34,7 +34,7 @@ export async function verifyToken() {
   return apiFetch('/api/auth/verify')
 }
 
-export async function sendMessage(agentId, content, projectContext = '', thread = '') {
+export async function sendMessage(agentId, content, projectContext = '', thread = '', tools = []) {
   const historyId = thread || agentId
   return apiFetch(`/api/message/${encodeURIComponent(agentId)}`, {
     method: 'POST',
@@ -42,6 +42,7 @@ export async function sendMessage(agentId, content, projectContext = '', thread 
       content,
       projectContext,
       thread: historyId,
+      ...(Array.isArray(tools) && tools.length ? { tools } : {}),
     }),
   })
 }
@@ -257,4 +258,9 @@ export async function downloadFile(id, name) {
 export async function getActivity() {
   const data = await apiFetch('/api/activity')
   return { activity: data.activity || [] }
+}
+
+export async function getTools() {
+  const data = await apiFetch('/api/tools')
+  return { tools: data.tools || [] }
 }

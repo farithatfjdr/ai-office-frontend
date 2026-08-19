@@ -3,7 +3,7 @@ import { X } from 'lucide-react'
 import {
   sendMessage, getMessages, toApiAgentId,
   getProjects, getTasks, createProject, createTask,
-  getFiles, uploadFile, downloadFile, getActivity,
+  getFiles, uploadFile, downloadFile, getActivity, getTools,
 } from './api/client'
 import { useAuth } from './context/AuthContext'
 import Login from './components/Login'
@@ -32,6 +32,7 @@ function OfficeApp() {
   const [projects, setProjects] = useState([])
   const [files, setFiles] = useState([])
   const [activity, setActivity] = useState([])
+  const [tools, setTools] = useState([])
   const [boardError, setBoardError] = useState(null)
   const [filesError, setFilesError] = useState(null)
   const [uploading, setUploading] = useState(false)
@@ -82,8 +83,8 @@ function OfficeApp() {
 
   useEffect(() => {
     let cancelled = false
-    Promise.allSettled([getProjects(), getTasks(), getFiles(), getActivity()]).then(
-      ([projectResult, taskResult, fileResult, activityResult]) => {
+    Promise.allSettled([getProjects(), getTasks(), getFiles(), getActivity(), getTools()]).then(
+      ([projectResult, taskResult, fileResult, activityResult, toolResult]) => {
         if (cancelled) return
         applyBoardResults(projectResult, taskResult)
         if (fileResult.status === 'fulfilled') {
@@ -94,6 +95,9 @@ function OfficeApp() {
         }
         if (activityResult.status === 'fulfilled') {
           setActivity(activityResult.value.activity || [])
+        }
+        if (toolResult.status === 'fulfilled') {
+          setTools(toolResult.value.tools || [])
         }
       },
     )
@@ -152,7 +156,7 @@ function OfficeApp() {
     }))
   }
 
-  const callAgentApi = async (uiAgentId, text, thread = uiAgentId) => {
+  const callAgentApi = async (uiAgentId, text, thread = uiAgentId, toolsForSend = []) => {
     const apiAgentId = toApiAgentId(uiAgentId)
     const name = agentLabel(uiAgentId)
 
@@ -162,7 +166,7 @@ function OfficeApp() {
     try {
       const project = projects.find((p) => p.agent === apiAgentId)
       const projectContext = project ? `Project: ${project.name}` : ''
-      const result = await sendMessage(uiAgentId, text, projectContext, thread)
+      const result = await sendMessage(uiAgentId, text, projectContext, thread, toolsForSend)
 
       removePendingTools(uiAgentId)
       appendMessage(uiAgentId, { role: 'assistant', text: result.agentResponse.content })
@@ -175,7 +179,7 @@ function OfficeApp() {
     }
   }
 
-  const handleSend = async (agentId, text) => {
+  const handleSend = async (agentId, text, toolsForSend = []) => {
     appendMessage(agentId, { role: 'user', text })
 
     const mentioned = AGENTS.find((a) => a.id !== agentId && text.includes(`@${a.name}`))
@@ -191,11 +195,11 @@ function OfficeApp() {
       appendMessage(mentioned.id, { role: 'tool', text: `New request from ${sourceLabel}` })
       appendMessage(mentioned.id, { role: 'user', text: cleanText || text })
 
-      await callAgentApi(mentioned.id, cleanText || text, agentId)
+      await callAgentApi(mentioned.id, cleanText || text, agentId, toolsForSend)
       return
     }
 
-    await callAgentApi(agentId, text)
+    await callAgentApi(agentId, text, agentId, toolsForSend)
   }
 
   const handleCreate = async (kind, rawText, deptId) => {
@@ -256,9 +260,10 @@ function OfficeApp() {
           <MainWorkspace
             agent={agent}
             messages={messagesByAgent[agent.id]}
-            onSend={(t) => handleSend(agent.id, t)}
+            onSend={(t, selectedTools) => handleSend(agent.id, t, selectedTools)}
             onCreate={handleCreate}
             sending={sendingAgent === agent.id}
+            tools={tools}
           />
         )
       case 'projects':
@@ -330,6 +335,7 @@ function OfficeApp() {
                 projects={projects}
                 files={files}
                 activity={activity}
+                tools={tools}
                 onDownloadFile={handleDownload}
               />
             )}
@@ -344,7 +350,7 @@ function OfficeApp() {
                 <X size={16} />
               </button>
               <div className="h-full overflow-y-auto">
-                <RightPanelForceVisible agent={agent} tasks={tasks} projects={projects} files={files} activity={activity} onDownloadFile={handleDownload} />
+                <RightPanelForceVisible agent={agent} tasks={tasks} projects={projects} files={files} activity={activity} tools={tools} onDownloadFile={handleDownload} />
               </div>
             </div>
           </div>
