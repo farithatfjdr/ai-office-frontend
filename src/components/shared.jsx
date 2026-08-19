@@ -77,13 +77,24 @@ export function ViewHeader({ title, subtitle, action }) {
   )
 }
 
-export function NewButton({ label }) {
-  return (
-    <button
-      className="flex items-center gap-1.5 text-[12.5px] font-medium px-3 py-1.5 rounded-md"
-      style={{ backgroundColor: T.surfaceRaised, color: T.text, border: `1px solid ${T.border}` }}
-    >
+export function NewButton({ label, onClick, htmlFor }) {
+  const className = 'flex items-center gap-1.5 text-[12.5px] font-medium px-3 py-1.5 rounded-md'
+  const style = { backgroundColor: T.surfaceRaised, color: T.text, border: `1px solid ${T.border}` }
+  const inner = (
+    <>
       <Plus size={14} /> {label}
+    </>
+  )
+  if (htmlFor) {
+    return (
+      <label htmlFor={htmlFor} className={`${className} cursor-pointer`} style={style}>
+        {inner}
+      </label>
+    )
+  }
+  return (
+    <button type="button" onClick={onClick} className={className} style={style}>
+      {inner}
     </button>
   )
 }

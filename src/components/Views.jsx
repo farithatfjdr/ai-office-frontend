@@ -1,7 +1,7 @@
 import {
   BookOpen, ChevronRight, FileText, FolderKanban, MoreHorizontal,
 } from 'lucide-react'
-import { AGENTS, FILES, T } from '../data/constants'
+import { AGENTS, T } from '../data/constants'
 import { NewButton, TaskStatusIcon, ViewHeader } from './shared'
 
 export function ProjectsView({ projects }) {
@@ -88,20 +88,60 @@ export function TasksView({ tasks }) {
   )
 }
 
-export function FilesView() {
-  const allFiles = [...FILES, 'invoice-july.pdf', 'campaign-brief.docx', 'scraper-config.json']
+function formatSize(bytes) {
+  if (bytes == null || bytes === '') return '—'
+  const n = Number(bytes)
+  if (Number.isNaN(n)) return '—'
+  if (n < 1024) return `${n} B`
+  if (n < 1024 * 1024) return `${Math.round(n / 1024)} KB`
+  return `${(n / (1024 * 1024)).toFixed(1)} MB`
+}
+
+export function FilesView({ files, uploading, error, onUpload, onDownload }) {
   return (
     <div className="flex-1 flex flex-col overflow-y-auto" style={{ backgroundColor: T.bg }}>
-      <ViewHeader title="Files" subtitle={`${allFiles.length} files`} action={<NewButton label="Upload" />} />
-      <div className="p-6 flex flex-col gap-1">
-        {allFiles.map((f) => (
-          <div key={f} className="flex items-center gap-3 px-3 py-2.5 rounded-md" style={{ border: `1px solid ${T.borderSoft}` }}>
-            <FileText size={15} style={{ color: T.textFaint }} />
-            <span className="text-[13px] flex-1 truncate" style={{ color: T.text }}>{f}</span>
-            <span className="text-[11px]" style={{ color: T.textFaint }}>—</span>
-          </div>
-        ))}
-      </div>
+      <ViewHeader
+        title="Files"
+        subtitle={files.length === 1 ? '1 file' : `${files.length} files`}
+        action={(
+          <>
+            <input
+              id="files-upload"
+              type="file"
+              className="hidden"
+              disabled={uploading}
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                e.target.value = ''
+                if (file) onUpload(file)
+              }}
+            />
+            <NewButton label={uploading ? 'Uploading…' : 'Upload'} htmlFor="files-upload" />
+          </>
+        )}
+      />
+      {error && (
+        <div className="px-6 pt-4 text-[12.5px]" style={{ color: T.textFaint }}>{error}</div>
+      )}
+      {files.length === 0 ? (
+        <div className="p-6 text-[13px]" style={{ color: T.textFaint }}>No files yet</div>
+      ) : (
+        <div className="p-6 flex flex-col gap-1">
+          {files.map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              onClick={() => onDownload(f)}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-md text-left"
+              style={{ border: `1px solid ${T.borderSoft}` }}
+            >
+              <FileText size={15} style={{ color: T.textFaint }} />
+              <span className="text-[13px] flex-1 truncate" style={{ color: T.text }}>{f.name}</span>
+              <span className="text-[11px]" style={{ color: T.textFaint }}>{formatSize(f.size)}</span>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -117,22 +157,25 @@ export function KnowledgeView() {
 }
 
 export function ActivityView({ activity }) {
-  const feed = [...activity].reverse()
   return (
     <div className="flex-1 flex flex-col overflow-y-auto" style={{ backgroundColor: T.bg }}>
       <ViewHeader title="Activity" subtitle="Company-wide audit trail" />
-      <div className="p-6 max-w-xl">
-        <div className="relative pl-4">
-          <div className="absolute left-[3px] top-1 bottom-1 w-px" style={{ backgroundColor: T.border }} />
-          {feed.map((a, i) => (
-            <div key={i} className="relative pb-4">
-              <div className="absolute -left-[15px] top-[3px] w-[6px] h-[6px] rounded-full" style={{ backgroundColor: T.accent }} />
-              <div className="text-[10.5px] font-mono mb-0.5" style={{ color: T.textFaint }}>{a.time}</div>
-              <div className="text-[13px]" style={{ color: T.text }}>{a.text}</div>
-            </div>
-          ))}
+      {activity.length === 0 ? (
+        <div className="p-6 text-[13px]" style={{ color: T.textFaint }}>No activity yet</div>
+      ) : (
+        <div className="p-6 max-w-xl">
+          <div className="relative pl-4">
+            <div className="absolute left-[3px] top-1 bottom-1 w-px" style={{ backgroundColor: T.border }} />
+            {activity.map((a) => (
+              <div key={a.id || `${a.createdAt}-${a.text}`} className="relative pb-4">
+                <div className="absolute -left-[15px] top-[3px] w-[6px] h-[6px] rounded-full" style={{ backgroundColor: T.accent }} />
+                <div className="text-[10.5px] font-mono mb-0.5" style={{ color: T.textFaint }}>{a.time}</div>
+                <div className="text-[13px]" style={{ color: T.text }}>{a.text}</div>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

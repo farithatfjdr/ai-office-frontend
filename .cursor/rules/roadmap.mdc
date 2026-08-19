@@ -19,15 +19,13 @@ Continue from the last unfinished item. Backend work lives in `fjdresources/ai-o
 - Projects + tasks from live APIs (`GET`/`POST` `/api/projects` and `/api/tasks`); War Room create POSTs instead of local mocks
 - Coolify Auto Deploy on `main` (GitHub App webhooks; Access Bypass on `/webhooks/*`)
 - Production login + smoke ([#6](https://github.com/fjdresources/ai-office-frontend/issues/6)): TOTP after Base32 `TOTP_SECRET` + backend container recreate; live Projects/Tasks; War Room create; agent message
+- Files + activity from live APIs ([#5](https://github.com/fjdresources/ai-office-frontend/issues/5))
 
 ## Next (in order)
 
-1. **Files + activity** ([#5](https://github.com/fjdresources/ai-office-frontend/issues/5))
-   - `GET /api/files` (upload/download) instead of hardcoded `FILES`
-   - Activity feed endpoint instead of `INITIAL_ACTIVITY`
+1. **Notifications** ([#7](https://github.com/fjdresources/ai-office-frontend/issues/7)) — still local mock data
+2. **Tools** ([#8](https://github.com/fjdresources/ai-office-frontend/issues/8)) — listed in the UI but not wired
 
 ## Known low-priority polish
 
 - Inline theme styles are duplicated; `T` in `constants.js` is the source of truth (see `shared.jsx`)
-- Notifications remain local mock data
-- Tools (Apify, n8n, web search) are listed in the UI but not wired
