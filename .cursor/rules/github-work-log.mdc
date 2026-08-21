@@ -7,7 +7,7 @@ alwaysApply: true
 
 Chats are not the record. Anyone taking over uses GitHub, not this thread. Every real action is documented. Every committable action is committed.
 
-- **Todo = Issue** in `fjdresources/ai-office-frontend`, on Project [fjdr-ai-office](https://github.com/orgs/fjdresources/projects/1). Open or update an Issue for each distinct leftover. A decision with no code yet still gets an Issue. Do not file backend work here.
+- **Todo = Issue** in `fjdresources/ai-office-frontend`, on Project [fjdr-ai-office](https://github.com/orgs/fjdresources/projects/1). Open or update an Issue for each distinct leftover. A decision with no code yet still gets an Issue. Do not file backend work here. This board is AI Office only — do not add `ad-dien-erp` (or other products); they have their own GitHub Project.
 - **Committable change = branch + commit + PR into `main`.** App code, Cursor rules, `.env.example`, compose, docs. PR body starts with `Fixes #N` (or `Fixes fjdresources/ai-office-backend#N` if the todo is on the other repo). Merge closes the Issue; the Project card goes to Done. Do not push straight to `main` unless the user explicitly says to. See `git-deploy.mdc`.
 - **Settings / browser / CDP that cannot go in git** (Coolify, Cloudflare, GitHub UI, live secrets): still document in an Issue (what was clicked, the result) or a committed rule/doc. Never commit secret values.
 - **Do not** treat Cursor plan todos or a chat recap as the log. **Do not** put the PR on the board as the todo when an Issue already is.
